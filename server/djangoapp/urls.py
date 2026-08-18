@@ -27,5 +27,16 @@ urlpatterns = [
         views.get_dealer_reviews,
         name="get_dealer_reviews",
     ),
+    # Aliases used by the Dealer React component.
+    path(
+        "dealer/<int:dealer_id>",
+        views.get_dealer_details,
+        name="dealer_details",
+    ),
+    path(
+        "reviews/dealer/<int:dealer_id>",
+        views.get_dealer_reviews,
+        name="reviews_by_dealer",
+    ),
     path("add_review", views.add_review, name="add_review"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
