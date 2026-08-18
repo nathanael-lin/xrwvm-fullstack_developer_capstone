@@ -8,7 +8,11 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import CarMake, CarModel
 from .populate import initiate
-from .restapis import analyze_review_sentiments, get_request, post_review
+from .restapis import (
+    analyze_review_sentiments,
+    get_request,
+    post_review,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +25,9 @@ def login_user(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         login(request, user)
-        return JsonResponse({"userName": username, "status": "Authenticated"})
+        return JsonResponse(
+            {"userName": username, "status": "Authenticated"}
+        )
     return JsonResponse({"userName": username})
 
 
@@ -35,7 +41,9 @@ def registration(request):
     data = json.loads(request.body)
     username = data["userName"]
     if User.objects.filter(username=username).exists():
-        return JsonResponse({"userName": username, "error": "Already Registered"})
+        return JsonResponse(
+            {"userName": username, "error": "Already Registered"}
+        )
 
     user = User.objects.create_user(
         username=username,
@@ -45,7 +53,9 @@ def registration(request):
         email=data["email"],
     )
     login(request, user)
-    return JsonResponse({"userName": user.username, "status": "Authenticated"})
+    return JsonResponse(
+        {"userName": user.username, "status": "Authenticated"}
+    )
 
 
 def get_cars(request):
@@ -59,7 +69,11 @@ def get_cars(request):
 
 
 def get_dealerships(request, state="All"):
-    endpoint = "/fetchDealers" if state == "All" else f"/fetchDealers/{state}"
+    endpoint = (
+        "/fetchDealers"
+        if state == "All"
+        else f"/fetchDealers/{state}"
+    )
     dealerships = get_request(endpoint) or []
     return JsonResponse({"status": 200, "dealers": dealerships})
 
@@ -70,12 +84,20 @@ def get_dealer_details(request, dealer_id):
 
 
 def get_dealer_reviews(request, dealer_id):
-    reviews = get_request(f"/fetchReviews/dealer/{dealer_id}") or []
+    reviews = get_request(
+        f"/fetchReviews/dealer/{dealer_id}"
+    ) or []
     for review in reviews:
-        text = review.get("review", review.get("reviewText", ""))
-        sentiment = analyze_review_sentiments(text) if text else None
+        text = review.get(
+            "review", review.get("reviewText", "")
+        )
+        sentiment = (
+            analyze_review_sentiments(text) if text else None
+        )
         if isinstance(sentiment, dict):
-            review["sentiment"] = sentiment.get("sentiment", sentiment.get("label"))
+            review["sentiment"] = sentiment.get(
+                "sentiment", sentiment.get("label")
+            )
         else:
             review["sentiment"] = sentiment
     return JsonResponse({"status": 200, "reviews": reviews})
@@ -84,14 +106,25 @@ def get_dealer_reviews(request, dealer_id):
 @csrf_exempt
 def add_review(request):
     if request.user.is_anonymous:
-        return JsonResponse({"status": 403, "message": "Unauthorized"})
+        return JsonResponse(
+            {"status": 403, "message": "Unauthorized"}
+        )
     if request.method != "POST":
-        return JsonResponse({"status": 405, "message": "POST required"}, status=405)
+        return JsonResponse(
+            {"status": 405, "message": "POST required"},
+            status=405,
+        )
     try:
         post_review(json.loads(request.body))
         return JsonResponse({"status": 200})
     except (json.JSONDecodeError, ValueError, TypeError):
-        return JsonResponse({"status": 400, "message": "Invalid review data"}, status=400)
+        return JsonResponse(
+            {"status": 400, "message": "Invalid review data"},
+            status=400,
+        )
     except Exception:
         logger.exception("Error posting review")
-        return JsonResponse({"status": 401, "message": "Error in posting review"}, status=401)
+        return JsonResponse(
+            {"status": 401, "message": "Error in posting review"},
+            status=401,
+        )
