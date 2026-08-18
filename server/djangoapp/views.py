@@ -1,10 +1,10 @@
+import json
+import logging
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-import json
-import logging
 
 from .models import CarMake, CarModel
 from .populate import initiate
